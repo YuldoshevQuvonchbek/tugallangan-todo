@@ -2,18 +2,28 @@ let elForm = elSelector(`.js-form`);
 let elInput = elSelector(`.js-input`, elForm);
 let elList = elSelector(`.js-list`);
 let alTodoTemlate = elSelector(`.todo-template`).content;
-let elCount = elSelector(`.count`)
+let elCount = elSelector(`.count`);
 
 let data = JSON.parse(localStorage.getItem(`allTodo`));
 console.log(data);
+let allTodo = data ? data : [];
 
-
-let allTodo =   data ? data : [];
-
-let onDelete = (evt) => {
-  let arr = [];
+let onCompleted = (id, isCompleted) => {
   allTodo.forEach((todo) => {
-    if (todo.id !== evt.target.dataset.id - 0) {
+    if (todo.id === id) {
+      todo.isCompleted = isCompleted;
+    }
+  });
+  console.log(allTodo);
+  localStorage.setItem(`allTodo`, JSON.stringify(allTodo));
+  onRender(allTodo);
+};
+
+let onDelete = (id) => {
+  let arr = [];
+
+  allTodo.forEach((todo) => {
+    if (todo.id !== id) {
       arr.push(todo);
 
       console.log(todo);
@@ -21,40 +31,41 @@ let onDelete = (evt) => {
   });
   allTodo = arr;
   onRender(arr);
-  localStorage.setItem(`allTodo` , JSON.stringify(arr))
+  localStorage.setItem(`allTodo`, JSON.stringify(arr));
 };
 
-let onEdit = (evt) => {
-  allTodo.forEach((todo)=> {
-
-    if (todo.id===evt.target.dataset.id -0 ) {
-      let aditedText=prompt(` Edit todo` , todo.text)
-      todo.text = aditedText
-      
+let onEdit = (id) => {
+  allTodo.forEach((todo) => {
+    if (todo.id === id) {
+      let aditedText = prompt(` Edit todo`, todo.text);
+      todo.text = aditedText;
     }
+  });
 
-  })
-  console.log(evt.target.dataset.id -0 );
-   onRender(allTodo);
-    localStorage.setItem(`allTodo`, JSON.stringify(allTodo));
+  onRender(allTodo);
+  localStorage.setItem(`allTodo`, JSON.stringify(allTodo));
 };
 
 let onRender = (arr) => {
   elList.innerHTML = null;
-  elCount.textContent= arr.length;
+  elCount.textContent = arr.length;
 
   arr.forEach((item) => {
     let elTodo = alTodoTemlate.cloneNode(true);
-    elTodo.querySelector(`.todo-text`).textContent = item.text;
+    let elLi = elTodo.querySelector(`.todo`);
+    let elText = elTodo.querySelector(`.todo-text`);
     let btnEdit = elTodo.querySelector(`.btn-edit`);
     let btnDelete = elTodo.querySelector(`.btn-delete`);
+    let elCheckbox = elTodo.querySelector(`.todo-check`);
 
-    btnDelete.dataset.id = item.id;
-     btnEdit.dataset.id = item.id;
-    
+    if (item.isCompleted) {
+      elText.classList.add(`text-decoration-line-through`);
+    }
 
-    btnEdit.addEventListener(`click`, onEdit);
-    btnDelete.addEventListener(`click`, onDelete);
+    elCheckbox.checked = item.isCompleted;
+    elText.textContent = item.text;
+
+    elLi.dataset.id = item.id;
 
     elList.appendChild(elTodo);
   });
@@ -70,7 +81,7 @@ let onSubmit = (evt) => {
   }
 
   let newTodo = {
-    id: allTodo.at(0)? allTodo.at(0)?.id + 1 : 1,
+    id: allTodo.at(0) ? allTodo.at(0)?.id + 1 : 1,
     text: inputValue,
     isCompleted: false,
   };
@@ -82,7 +93,19 @@ let onSubmit = (evt) => {
   elInput.value = null;
   elInput.focus();
 };
- onRender(allTodo)
 
+let eventDelegation = (evt) => {
+  let parentElement = evt.target.closest(`.todo`);
+  let elid = parentElement.dataset.id - 0;
+  if (evt.target.matches(`.btn-delete`)) {
+    onDelete(elid);
+  } else if (evt.target.matches(`.btn-edit`)) {
+    onEdit(elid);
+  } else if (evt.target.matches(`.todo-check`)) {
+    onCompleted(elid, evt.target.checked);
+  }
+};
+
+onRender(allTodo);
 elForm.addEventListener(`submit`, onSubmit);
-
+elList.addEventListener(`click`, eventDelegation);
