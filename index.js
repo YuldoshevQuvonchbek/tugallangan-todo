@@ -9,7 +9,6 @@ console.log(data);
 let allTodo = data ? data : [];
 
 
-
 let onCompleted = (id, isCompleted) => {
   allTodo.forEach((todo) => {
     if (todo.id === id) {
