@@ -8,6 +8,8 @@ let data = JSON.parse(localStorage.getItem(`allTodo`));
 console.log(data);
 let allTodo = data ? data : [];
 
+
+
 let onCompleted = (id, isCompleted) => {
   allTodo.forEach((todo) => {
     if (todo.id === id) {
